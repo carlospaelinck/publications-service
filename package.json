@@ -1,0 +1,25 @@
+{
+  "name": "publications-service",
+  "version": "1.0.0",
+  "description": "Web service for Publications.",
+  "main": "app.js",
+  "dependencies": {
+    "bcryptjs": "2.1.0",
+    "boom": "^2.7.1",
+    "handlebars": "^3.0.3",
+    "hapi": "^8.4.0",
+    "hapi-auth-jwt": "^2.1.2",
+    "joi": "^6.4.1",
+    "jsonwebtoken": "^5.0.0",
+    "lodash": "^3.9.3",
+    "moment": "^2.10.2",
+    "mongoose": "^4.0.2",
+    "path": "^0.11.14",
+    "lodash": "^3.9.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Carlos Paelinck",
+  "license": "ISC"
+}
