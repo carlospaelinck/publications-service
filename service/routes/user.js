@@ -27,7 +27,8 @@ exports.create = function(server) {
     handler: function(request, reply) {
       var user = new User({
         name: request.payload.name,
-        password: request.payload.password
+        password: request.payload.password,
+        temporary: request.payload.temporary || false,
       });
 
       user.save(function(error, user) {
@@ -102,5 +103,3 @@ exports.show = function(server) {
     }
   });
 };
-
-

@@ -4,11 +4,18 @@ var Config = require('./service/config'),
   Mongoose = require('mongoose'),
   Path = require('path');
 
-var server = new Hapi.Server(),
-  routes = require('./service/routes');
+var server = new Hapi.Server({
+  connections: {
+    routes: {
+      cors: true
+    }
+  }
+});
+
+var routes = require('./service/routes');
 
 server.connection({port: 3300});
-Mongoose.connect('mongodb://localhost/pub-db-service');
+Mongoose.connect('mongodb://localhost/pub-ng');
 
 var validate = function(token, callback) {
   var diff = Moment().diff(Moment(token.iat * 1000));

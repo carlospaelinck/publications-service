@@ -5,6 +5,7 @@ var Bcrypt = require('bcryptjs'),
 var User = new Schema({
   name: {type: String, required: true, trim: true, unique: true},
   password: {type: String, required: true},
+  temporary: {type: Boolean},
   documents: [{type: Schema.Types.ObjectId, ref: 'Document'}]
 });
 
