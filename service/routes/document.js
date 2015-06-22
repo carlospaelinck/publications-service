@@ -1,13 +1,16 @@
 var _ = require('lodash'),
+  fs = require('fs'),
   Boom = require('boom'),
   Bcrypt = require('bcryptjs'),
   Config = require('../config'),
   Document = require('../models/document').Document,
+  Hapi = require('Hapi'),
   Joi = require('joi'),
   Jwt = require('jsonwebtoken'),
   Shape = require('../models/shape').Shape,
   Shared = require('../shared'),
-  User = require('../models/user').User;
+  User = require('../models/user').User,
+  Readable = require('stream').Readable;
 
 module.exports = exports = function(server) {
   exports.create(server);
@@ -15,6 +18,7 @@ module.exports = exports = function(server) {
   exports.index(server);
   exports.delete(server);
   exports.update(server);
+  exports.pdf(server);
 };
 
 exports.index = function(server) {
@@ -198,6 +202,42 @@ exports.delete = function(server) {
                   });
                 }
               });
+            }
+          });
+        },
+        failure: function(error) {
+          reply(Boom.preconditionFailed('The user from the access token could not be found.'));
+        }
+      });
+    }
+  });
+};
+
+exports.pdf = function(server) {
+  server.route({
+    method: 'GET',
+    path: '/documents/{id}/pdf',
+    config: {
+      auth: {
+        strategy: 'token'
+      }
+    },
+    handler: function(request, reply) {
+      Shared.userFromToken({
+        request: request,
+        success: function(user) {
+          Document.findOne({
+            _user: user._id,
+            _id: request.params.id
+          },
+          function(error, foundDocument) {
+            if (error || !foundDocument) {
+              reply(Boom.notFound('The document cound not be found.'));
+            } else {
+              var pdf = foundDocument.pdf();
+              var newStream = new Readable().wrap(pdf);
+              reply(newStream);
+              pdf.end();
             }
           });
         },
