@@ -2,7 +2,6 @@ var Mongoose = require('mongoose'),
   Schema = Mongoose.Schema,
   Shape = require('./shape').Shape,
   PDFDocument = require('pdfkit'),
-  through = require('through'),
   _ = require('lodash');
 
 var Document = new Schema({
@@ -20,7 +19,6 @@ Document.methods = {
       dpi = 72,
       doc = new PDFDocument({ size: [model.width * dpi, model.height * dpi] })
 
-    // doc.pipe(through());
 
     doc.registerFont('SOURCE_SANS_PRO_400', 'pdf_assets/SourceSansPro-Regular.ttf');
     doc.registerFont('SOURCE_SANS_PRO_500', 'pdf_assets/SourceSansPro-Semibold.ttf');
