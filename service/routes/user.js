@@ -48,19 +48,33 @@ exports.patchUpdate = function(server) {
     config: {
       auth: {
         strategy: 'token'
+      },
+      validate: {
+        payload: {
+          name: Joi.string().email(),
+          password: Joi.string(),
+          temporary: Joi.boolean(),
+          currentPassword: Joi.string().required()
+        }
       }
     },
     handler: function(request, reply) {
       Shared.userFromToken({
         request: request,
         success: function(user) {
-          user = _.extend(user, request.payload);
+          user.validatePassword(request.payload.currentPassword, function(isValid) {
+            if (isValid) {
+              user = _.extend(user, request.payload);
 
-          user.save(function(error, updatedUser) {
-            if (error) {
-              reply(Boom.badData('Could not update the user.'));
+              user.save(function(error, updatedUser) {
+                if (error) {
+                  reply(Boom.badData('Could not update the user.'));
+                } else {
+                  reply(updatedUser);
+                }
+              });
             } else {
-              reply(updatedUser);
+              reply(Boom.forbidden('Invalid password or user name.'));
             }
           });
         },
