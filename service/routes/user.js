@@ -1,4 +1,5 @@
-var Boom = require('boom'),
+var _ = require('lodash'),
+  Boom = require('boom'),
   Bcrypt = require('bcryptjs'),
   Config = require('../config'),
   Joi = require('joi'),
@@ -10,6 +11,7 @@ module.exports = exports = function(server) {
   exports.create(server);
   exports.login(server);
   exports.show(server);
+  exports.patchUpdate(server);
 };
 
 exports.create = function(server) {
@@ -20,7 +22,8 @@ exports.create = function(server) {
       validate: {
         payload: {
           name: Joi.string().email().required(),
-          password: Joi.string().required()
+          password: Joi.string().required(),
+          temporary: Joi.boolean()
         }
       }
     },
@@ -33,6 +36,37 @@ exports.create = function(server) {
 
       user.save(function(error, user) {
         reply(user || error);
+      });
+    }
+  });
+};
+
+exports.patchUpdate = function(server) {
+  server.route({
+    method: 'PATCH',
+    path: '/users',
+    config: {
+      auth: {
+        strategy: 'token'
+      }
+    },
+    handler: function(request, reply) {
+      Shared.userFromToken({
+        request: request,
+        success: function(user) {
+          user = _.extend(user, request.payload);
+
+          user.save(function(error, updatedUser) {
+            if (error) {
+              reply(Boom.badData('Could not update the user.'));
+            } else {
+              reply(updatedUser);
+            }
+          });
+        },
+        failure: function(error) {
+          reply(Boom.preconditionFailed('The user from the access token could not be found.'));
+        }
       });
     }
   });
@@ -63,6 +97,7 @@ exports.login = function(server) {
               var response = {
                 name: user.name,
                 id: user._id,
+                temporary: user.temporary || false,
                 token: Jwt.sign(tokenData, Config.key.privateKey)
               };
 
