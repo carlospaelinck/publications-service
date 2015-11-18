@@ -1,5 +1,6 @@
 var Config = require('./service/config'),
   Hapi = require('hapi'),
+  HapiAuthJwt = require('hapi-auth-jwt'),
   Moment = require('moment'),
   Mongoose = require('mongoose'),
   Path = require('path');
@@ -26,22 +27,28 @@ var validate = function(token, callback) {
   }
 };
 
-server.start(function() {
+server.start(() => {
   console.log('Server running at: ' + server.info.uri);
 });
 
-server.register(require('hapi-auth-jwt'), function(error) {
+server.register(HapiAuthJwt, function(error) {
   if (error) { console.log(error); }
 
   server.auth.strategy('token', 'jwt', {
     key: Config.key.privateKey,
-    validateFunc: validate
+    validateFunc: validate,
+    verifyOptions: {algorithms: [ 'HS256' ]}
   });
 
   routes.init(server);
 
-  server.route([
-    {method: 'GET', path: '/', handler: function(request, reply) { reply('Publications Web Service'); }}
-  ]);
+  const indexRoute = {
+    method: 'GET',
+    path: '/',
+    handler: (request, reply) => { reply('Publications Web Service'); }
+  };
 
+  server.route([
+    indexRoute
+  ]);
 });

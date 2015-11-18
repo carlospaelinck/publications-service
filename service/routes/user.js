@@ -28,14 +28,20 @@ exports.create = function(server) {
       }
     },
     handler: function(request, reply) {
-      var user = new User({
+      const user = new User({
         name: request.payload.name,
         password: request.payload.password,
         temporary: request.payload.temporary || false,
       });
 
-      user.save(function(error, user) {
-        reply(user || error);
+      user.save((error, user) => {
+        if (error && error.toJSON().code === 11000) {
+          reply(Boom.conflict('User already exists'));
+        } else if (error) {
+          reply(Boom.badRequest());
+        } else {
+          reply(user);
+        }
       });
     }
   });
@@ -103,16 +109,16 @@ exports.login = function(server) {
         if (!error && user) {
           user.validatePassword(request.payload.password, function(isValid) {
             if (isValid) {
-              var tokenData = {
+              const tokenData = {
                 name: user.name,
                 id: user._id
               };
 
-              var response = {
+              const response = {
                 name: user.name,
                 id: user._id,
                 temporary: user.temporary || false,
-                token: Jwt.sign(tokenData, Config.key.privateKey)
+                token: Jwt.sign(tokenData, Config.key.privateKey, {algorithm: 'HS256'})
               };
 
               reply(response);
