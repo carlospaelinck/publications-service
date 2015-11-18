@@ -18,7 +18,7 @@ var routes = require('./service/routes');
 server.connection({port: 3300});
 Mongoose.connect('mongodb://localhost/pub-ng');
 
-var validate = function(token, callback) {
+var validate = function(event, token, callback) {
   var diff = Moment().diff(Moment(token.iat * 1000));
   if (diff > Config.key.tokenExpiry) {
     return callback(null, false);
